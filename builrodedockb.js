@@ -1,4 +1,4 @@
-/* builrodedockb v1.0.0
+/* builrodedockb v1.0.1
    Single writer for bhProject. Owns .bh-add controls, quantity accordion,
    project-mode sheet, lane switching, dock render, contact discovery,
    hero WhatsApp fallback, legacy suppression and body padding.
@@ -7,8 +7,7 @@
 (function () {
   "use strict";
 
-  var dock = document.getElementById("bhDock");
-  if (!dock) return;
+  var dock = null;
 
   /* ================= registry — canonical key is the only identity ========= */
   var SERVICES = {
@@ -222,6 +221,10 @@
       ".bh-mx{display:none;width:100%;height:44px;margin-top:12px;border:1px solid #E0E0E0;" +
       "background:#fff;border-radius:6px;font-size:13px;color:#111;cursor:pointer;font-family:inherit}" +
       ".bh-mode-on .bh-mx{display:block}" +
+      ".bh-mode-on .bh-rm,.bh-mode-on .bh-os,.bh-mode-on .bh-sv-list{display:none}" +
+      ".bh-mode-on .bh-gl{display:none}" +
+      ".bh-mode-on .bh-wh .bh-gl{display:block}" +
+      ".brb-bar{display:none}" +
       "body.bh-locked{overflow:hidden}";
     document.head.appendChild(s);
   }
@@ -419,12 +422,6 @@
     var sv = document.querySelector(".bh-sv");
     if (sv) sv.classList.toggle("bh-mode-on", !!state.projectMode);
     ensureModeExit();
-    [".bh-rm", ".bh-os", ".bh-sv-list"].forEach(function (sel) {
-      var el = document.querySelector(sel);
-      if (el) el.style.display = state.projectMode ? "none" : "";
-    });
-    var label = document.querySelector(".bh-gl[data-lane]");
-    if (label) label.style.display = state.projectMode ? "none" : "";
     [].slice.call(document.querySelectorAll("[data-mode]")).forEach(function (row) {
       row.setAttribute("aria-pressed",
         state.projectMode === row.getAttribute("data-mode") ? "true" : "false");
@@ -518,7 +515,6 @@
       groups.forEach(function (g) {
         g.style.display = g.getAttribute("data-lane") === lane ? "" : "none";
       });
-      if (state.projectMode) renderMode();
     }
 
     panes.forEach(function (p, i) {
@@ -652,6 +648,8 @@
 
   /* ================= boot ================================================= */
   function boot() {
+    dock = document.getElementById("bhDock");
+    if (!dock) return;                 /* inert on every other page */
     injectStyle();
     suppressLegacy();
     discoverContact();
