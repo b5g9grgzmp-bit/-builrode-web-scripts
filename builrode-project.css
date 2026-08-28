@@ -1,0 +1,86 @@
+/* builrode-project.css v2.0.0
+   Companion to builrode-project.js. Paste into the page head <style> block of the
+   pages that carry the dock or the Review — it is page-scoped by deployment, and the
+   two global-looking rules below are additionally guarded with :has() so the file is
+   inert on any page without #bhBar or #bhReview even if it is ever loaded site-wide.
+   The script sets classes and attributes; it never injects CSS.
+   Replaces the CSS that builrodehomev2bar17 and builrodehomev2float used to inject.
+
+   Deliberate omission: there is NO Add → Focus label switch. Per Gaurav's decision the
+   Add/Added pills stay a plain selection control in full-renovation mode; the meaning is
+   carried by .bh-focusline ("Choose areas you want us to focus on") and by the dock label
+   ("Full renovation · N areas"). If a Focus label is ever wanted, do it with two Designer
+   spans toggled on #bhMain[data-mode="full"], not with a CSS content: string. */
+
+/* Fusca template's own contact bar stays hidden where this system owns the bottom edge. */
+body:has(#bhBar) .brb-bar,
+body:has(#bhReview) .brb-bar { display: none !important; }
+
+/* Page-end content clears the fixed dock. Only where the dock exists. */
+body:has(#bhBar) { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+html:has(#bhBar) { scroll-padding-bottom: 116px; }
+
+/* ---------- Dock: one black bar, four presentations (empty / text / services / full) ---------- */
+#bhBar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  padding: 0 max(12px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  pointer-events: none;
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+}
+#bhBar .bhd {
+  box-sizing: border-box;
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 10px;
+  height: 56px; padding: 8px;
+  background: #1A1614; border-radius: 64px;
+  font-family: 'Inter Tight', Inter, sans-serif;
+}
+#bhBar .bhd-wa {
+  box-sizing: border-box;
+  flex: none; width: 40px; height: 40px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.1); color: #25D366; text-decoration: none;
+}
+#bhBar .bhd-wa svg { width: 20px; height: 20px; }
+
+/* Empty: the whole bar is the action. */
+#bhBar .bhd-talk {
+  flex: 1; text-align: center; padding-right: 40px; /* optically centred against the glyph */
+  font-size: 15px; font-weight: 500; color: #fff; text-decoration: none;
+}
+
+/* Text / services / full: label left (may ellipsize), CTA right (never compresses). */
+#bhBar .bhd-state {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 14px; font-weight: 500; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* CTA is the monochrome inverse of the bar — no amber. */
+#bhBar .bhd-cta {
+  box-sizing: border-box;
+  flex: none; display: inline-flex; align-items: center;
+  height: 40px; padding: 0 16px; border-radius: 64px;
+  background: #fff; color: #1A1614;
+  font-size: 14px; font-weight: 500; text-decoration: none; white-space: nowrap;
+}
+#bhBar .bhd-cta:active { transform: scale(.985); }
+
+/* ---------- Full renovation mode ---------- */
+/* One Designer element under the flagship: <div class="bh-focusline">Choose areas you want us to focus on</div>
+   Behavioural guidance, not fine print — readable at a glance, normal weight. */
+#bhMain .bh-focusline {
+  display: none; align-items: center; gap: 8px;
+  margin: 0 4px 10px; font-size: 12.5px; line-height: 140%; font-weight: 400; color: #66615B;
+}
+#bhMain .bh-focusline:before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: #1A1614; flex: none;
+}
+#bhMain[data-mode="full"] .bh-focusline { display: flex; }
+
+/* ---------- Drawer chevron (Release 1 keeps the drawer) ---------- */
+#bhChev { transition: transform .2s ease; }
+#bhMore[aria-expanded="true"] #bhChev { transform: rotate(180deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  #bhChev, #bhBar .bhd-cta { transition: none; }
+}
