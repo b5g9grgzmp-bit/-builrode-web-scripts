@@ -1,4 +1,4 @@
-/*! builrode-project.js v2.0.0
+/*! builrode-project.js v2.0.1
  *  Single controller for the Builrode project state.
  *  Replaces the fifteen legacy Home v2 page scripts.
  *
@@ -39,7 +39,7 @@
   'use strict';
   if (win.BuilrodeProject) return;
 
-  var VERSION = '2.0.0';
+  var VERSION = '2.0.1';
   var SCHEMA = 1;
   var KEY = 'bh_project';
   var TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -314,6 +314,7 @@
       var fired = false;
 
       q.setAttribute('placeholder', '');
+      if (S.heroText) q.value = S.heroText; // 2.0.1: restore persisted text into the field (also pauses the example typewriter via its busy() check)
 
       function submit(e) {
         if (e) e.preventDefault();
