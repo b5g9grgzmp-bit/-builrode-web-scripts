@@ -1,4 +1,4 @@
-/*! builrode-project.js v2.1.3
+/*! builrode-project.js v2.2.0
  *  Single controller for the Builrode project state.
  *  Replaces the fifteen legacy Home v2 page scripts.
  *
@@ -57,12 +57,33 @@
  *  Storage schema
  *    SCHEMA 1 — today's taxonomy. Bump to 2 at Release 2 (Carpentry & wardrobes merge);
  *    v1 projects then expire safely on load instead of carrying stale service names.
+ *
+ *  ── 2.2.0 — 12 Sep 2026 — Project Dock v1.2 ──────────────────────────────
+ *  Dock rebuilt to the frozen v1.2 specification. Six states resolved in a
+ *  fixed order with Full renovation tested first. No arrows or chevrons.
+ *  State 0 is a single whole-bar anchor; selected states expose exactly two
+ *  controls (label, Review project). Count moves into a cream chip; the
+ *  primary label carries the underline and is the only editable affordance.
+ *  Button accessible names are static — the persistent status region is the
+ *  only thing that announces counts.
+ *  #bhBar gains two permanent children created once at init: .bhd-view,
+ *  the only node whose innerHTML is ever written, and .bhd-sr, a status
+ *  region that is never detached.
+ *  WhatsApp: state 0 CLONES .brb-bar .brb-wa svg at runtime and both
+ *  entries carry the .bhm-walink href byte-for-byte, unmodified. The
+ *  inline GLYPH below is the missing-source fallback and the row's own
+ *  drawing. Adds the in-flow .bhm-warow row inside #bhMain, a 75/75ms
+ *  opacity crossfade on the project label only (never across state 0), a
+ *  measured reserve variable and keyboard suppression.
+ *  Mobile-only by CSS; this file renders identically at every width and the
+ *  injectors hide #bhBar at >=768px.
+ *  Rollback: re-pin 2.1.3 @ 88d94eb5 and remove the v31dockcss* injectors.
  */
 (function (win, doc) {
   'use strict';
   if (win.BuilrodeProject) return;
 
-  var VERSION = '2.1.3';
+  var VERSION = '2.2.0';
   var SCHEMA = 1;
   var KEY = 'bh_project';
   var TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -70,6 +91,7 @@
   var DEFAULT_REVIEW = '/review';
   var DEFAULT_TEL = 'tel:+918383056889';
   var DEFAULT_WA = 'https://wa.me/918383056889';
+  var FIELDS = 'input, textarea, [contenteditable]';
   var CAPTURE_WATCHDOG_MS = 20000;
   var ATTR_KEY = 'bh_attr';
   var LONG_TEXT = 140;
@@ -371,46 +393,335 @@
   };
 
   /* ------------------------------------------------------------------ */
-  /* Dock — owns the markup inside #bhBar. Four presentations.           */
-  /*   empty      → Talk to an engineer                                   */
-  /*   text-only  → Your project · Review project                         */
-  /*   services   → N selected · Review project                           */
-  /*   full       → Full renovation · N areas · Review project            */
+  /* Dock — owns the markup inside #bhBar. Six states, resolved in a fixed  */
+  /* order so Full renovation can never fall through to a service count:    */
+  /*   0   empty          WhatsApp glyph + whole-bar link                   */
+  /*   1   hero text only Your project            (plain text, no control)  */
+  /*   2   one service    1 service selected      + Review project          */
+  /*   3   N services     N services selected     + Review project          */
+  /*   4   full, 0 areas  Full renovation         + Review project          */
+  /*   4a  full, N areas  Full renovation + chip  + Review project          */
+  /*                                                                        */
+  /* #bhBar gets exactly two permanent children, built once in init():      */
+  /*   .bhd-view   the only node this script ever writes innerHTML to       */
+  /*   .bhd-sr     the status region, created once and never detached       */
+  /* #bhBar.innerHTML is cleared once at init and never assigned again, so  */
+  /* the live region keeps its DOM identity across every state change.      */
+  /* The page head carries #bhBar>:not(.bhd){display:none!important}; the   */
+  /* injected CSS re-shows these two children at higher specificity.        */
+  /* It also owns .bhm-warow, the in-flow WhatsApp row inside #bhMain.      */
   /* ------------------------------------------------------------------ */
   var dock = {
+    /* Fallback drawing only. State 0 clones the live site glyph; this is   */
+    /* used when that source is absent, and by the in-flow row.             */
+    GLYPH: '<svg class="bhd-g" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">' +
+      '<path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24a8.23 8.23 0 0 1-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24Zm-2.5 4.1c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.68 2.57 4.07 3.6.57.25 1.01.39 1.36.5.57.19 1.09.16 1.5.1.46-.07 1.41-.58 1.61-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.19-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.54-.41h-.45Z"/></svg>',
+
+    /* Clone the live site glyph for state 0. CSS supplies 20px and the     */
+    /* #25D366 colour through currentColor.                                 */
+    cloneGlyph: function () {
+      var s = $('.brb-bar .brb-wa svg');
+      if (!s || !s.cloneNode) return this.GLYPH;
+      var c = s.cloneNode(true);
+      c.setAttribute('class', 'bhd-g');
+      c.setAttribute('aria-hidden', 'true');
+      c.setAttribute('focusable', 'false');
+      return c.outerHTML || this.GLYPH;
+    },
+
+    /* The approved source href is used EXACTLY as authored — never split,  */
+    /* decoded, re-encoded or rebuilt. Fallback only when it is absent.     */
+    waHref: function () {
+      var a = $('.bhm-walink[href*="wa.me"]');
+      if (a) return a.getAttribute('href');
+      var b = $('a[href*="wa.me"]');
+      return (b && b.getAttribute('href')) || DEFAULT_WA;
+    },
+
+    /* Contract: dockHref === sourceHref && rowHref === sourceHref.         */
+    assertWa: function () {
+      var a = $('.bhm-walink[href*="wa.me"]');
+      if (!a) return true;                              // fallback path, nothing to compare
+      var source = a.getAttribute('href');
+      var dockA = this.viewNode && this.viewNode.querySelector('.bhd-empty');
+      var rowA = doc.querySelector('.bhm-warow');
+      var dockHref = dockA ? dockA.getAttribute('href') : this.wa;
+      var rowHref = rowA ? rowA.getAttribute('href') : this.wa;
+      var pass = dockHref === source && rowHref === source;
+      if (!pass && win.console && win.console.warn) {
+        win.console.warn('[builrode] WhatsApp href contract violated', { source: source, dock: dockHref, row: rowHref });
+      }
+      return pass;
+    },
+
     init: function () {
       this.bar = $('#bhBar');
       if (!this.bar) return false;
-      // Contact discovery, once, before this script writes any links of its own.
-      var tel = $('a[href^="tel:"]'), wa = $('a[href*="wa.me"]');
+      var tel = $('a[href^="tel:"]');
       this.tel = tel ? tel.getAttribute('href') : DEFAULT_TEL;
-      this.wa = wa ? wa.getAttribute('href') : DEFAULT_WA;
-      var glyph = $('.brb-bar .brb-wa svg');
-      this.glyph = glyph ? glyph.outerHTML :
-        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 10c0 3 2 5 5 5l1-2-2-1-1 1c-1 0-2-1-2-2l1-1-1-2z"/></svg>';
+      this.wa = this.waHref();
+      this.glyph = this.cloneGlyph();
+      if (!this.bar.getAttribute('role')) this.bar.setAttribute('role', 'region');
+      if (!this.bar.getAttribute('aria-label')) this.bar.setAttribute('aria-label', 'Your project');
+
+      // The only time #bhBar.innerHTML is ever written.
+      this.bar.innerHTML = '';
+      var v = doc.createElement('div');
+      v.className = 'bhd-view';
+      var s = doc.createElement('span');
+      s.className = 'bhd-sr';
+      s.setAttribute('role', 'status');
+      s.setAttribute('aria-live', 'polite');
+      s.setAttribute('aria-atomic', 'true');
+      this.bar.appendChild(v);
+      this.bar.appendChild(s);
+      this.viewNode = v;
+      this.srNode = s;
+
+      this.swap = null;        // pending crossfade timer
+      this.faded = false;      // project label currently at opacity 0
+      this.booted = false;     // initial-render guard, separate from content key
+      this.lastKey = null;
+      this.lastState = null;
+      this.bind();
+      this.warow();
       return true;
     },
-    label: function (d) {
-      if (d.projectMode === 'full') {
-        return FULL + (d.count ? ' \u00b7 ' + d.count + (d.count === 1 ? ' area' : ' areas') : '');
-      }
-      if (!d.count) return 'Your project';                       // text-only: never "0 selected"
-      var l = d.count + ' selected';
-      return d.showReturnCue ? 'Your project \u00b7 ' + l : l;   // return cue only where it fits
-    },
-    render: function (d) {
-      var b = this.bar;
-      b.setAttribute('data-mode', d.isEmpty ? 'empty' : d.projectMode);
-      var waLink = '<a class="bhd-wa" href="' + esc(this.wa) + '" target="_blank" rel="noopener" aria-label="Chat with Builrode on WhatsApp">' + this.glyph + '</a>';
 
-      if (d.isEmpty) {
-        b.innerHTML = '<div class="bhd bhd-empty">' + waLink +
-          '<a class="bhd-talk" href="' + esc(this.wa) + '" target="_blank" rel="noopener">Talk to an engineer \u2192</a></div>';
+    /* ---- in-flow WhatsApp row, scoped to the Home catalogue ----------- */
+    /* Resolved inside #bhMain only. #bhMore and #bhDrawer are siblings, so */
+    /* an after-#bhMore insert would land between the drawer trigger and    */
+    /* its content; an after-#bhDrawer insert would break the existing      */
+    /* #bhDrawer + .bh-strip adjacency. Before .bh-mf satisfies both.       */
+    /* No fallback anchor: if either lookup fails, nothing is inserted.     */
+    warow: function () {
+      var main = $('#bhMain');
+      if (!main) return;
+      if (main.querySelector('.bhm-warow')) return;     // idempotency, scoped
+      var mf = main.querySelector('.bh-mf');
+      if (!mf || !mf.parentNode) return;
+      var a = doc.createElement('a');
+      a.className = 'bhm-warow';
+      a.setAttribute('href', this.wa);                  // identical string, no rewrite
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+      a.innerHTML = '<span class="bhm-wac">' + this.GLYPH + '</span>' +
+        '<span class="bhm-wat">' +
+        '<span class="bhm-wat1">Talk to an engineer on WhatsApp</span>' +
+        '<span class="bhm-wat2">Need help choosing? Ask before you decide.</span>' +
+        '</span>';
+      mf.parentNode.insertBefore(a, mf);
+    },
+
+    /* ---- state ------------------------------------------------------- */
+    state: function (d) {
+      if (d.projectMode === 'full') return d.count > 0 ? '4a' : '4';
+      if (d.count >= 2) return '3';
+      if (d.count === 1) return '2';
+      if (!d.isEmpty) return '1';
+      return '0';
+    },
+
+    parts: function (st, d) {
+      if (st === '4a') return { primary: FULL, chip: d.count + (d.count === 1 ? ' area' : ' areas') };
+      if (st === '4') return { primary: FULL, chip: '' };
+      if (st === '3') return { primary: d.count + ' services selected', chip: '' };
+      if (st === '2') return { primary: '1 service selected', chip: '' };
+      return { primary: 'Your project', chip: '' };
+    },
+
+    /* Static by design. Counts are announced by the status region only —   */
+    /* a changing button name would double-announce.                        */
+    aria: function (st) {
+      return (st === '4' || st === '4a') ? 'Show Full renovation' : 'Show selected services';
+    },
+
+    target: function (st) {
+      return (st === '4' || st === '4a') ? $('.bh-cardwide') : $('#bhGrid');
+    },
+
+    bind: function () {
+      var self = this;
+      this.bar.addEventListener('click', function (e) {     // stays on #bhBar
+        var t = e.target.closest ? e.target.closest('.bhd-label') : null;
+        if (!t) return;
+        e.preventDefault();
+        var el = self.target(self.lastState);
+        if (!el) return;
+        var reduce = win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        try { el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+        catch (err) { el.scrollIntoView(); }
+      });
+    },
+
+    paint: function (st, d, p) {
+      if (st === '0') {
+        this.viewNode.innerHTML = '<a class="bhd bhd-empty" href="' + esc(this.wa) +
+          '" target="_blank" rel="noopener noreferrer">' + this.glyph +
+          '<span class="bhd-talk">Talk to an engineer on WhatsApp</span></a>';
+      } else {
+        var inner = '<span class="bhd-t">' + esc(p.primary) + '</span>' +
+          (p.chip ? '<span class="bhd-chip">' + esc(p.chip) + '</span>' : '');
+        var left = st === '1'
+          ? '<span class="bhd-plain">' + inner + '</span>'
+          : '<button type="button" class="bhd-label" aria-label="' + esc(this.aria(st)) + '">' + inner + '</button>';
+        this.viewNode.innerHTML = '<div class="bhd">' + left +
+          '<a class="bhd-cta" href="' + esc(reviewUrl()) + '">Review project</a></div>';
+      }
+      this.faded = false;
+      this.assertWa();
+    },
+
+    announce: function (st, p) {
+      if (!interacted || !this.srNode) return;
+      this.srNode.textContent = st === '0' ? '' : p.primary + (p.chip ? ', ' + p.chip : '');
+    },
+
+    /* Project label only. .bhd-empty is deliberately excluded so the       */
+    /* WhatsApp action and its glyph never fade.                            */
+    group: function () {
+      return this.viewNode.querySelector('.bhd-label, .bhd-plain');
+    },
+
+    render: function (d) {
+      var self = this, st = this.state(d);
+      var prev = this.lastState;                       // captured BEFORE the update
+      this.lastState = st;
+      this.bar.setAttribute('data-mode', st === '0' ? 'empty' : d.projectMode);
+      this.bar.setAttribute('data-state', st);
+      doc.documentElement.setAttribute('data-bhstate', st);
+
+      var p = st === '0' ? { primary: '', chip: '' } : this.parts(st, d);
+      var key = st + '|' + p.primary + '|' + p.chip;
+      if (key === this.lastKey) return;                // nothing visible changed
+
+      if (this.swap) { clearTimeout(this.swap); this.swap = null; }   // latest wins
+
+      var first = !this.booted;
+      var reduce = win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function commit() {
+        self.paint(st, d, p);
+        self.lastKey = key;
+        if (!first) self.announce(st, p);
+      }
+
+      // Instant whenever state 0 is on either side of the transition.
+      if (first || reduce || prev === '0' || st === '0') {
+        commit();
+        this.booted = true;
         return;
       }
-      b.innerHTML = '<div class="bhd">' + waLink +
-        '<span class="bhd-state">' + esc(this.label(d)) + '</span>' +
-        '<a class="bhd-cta" href="' + esc(reviewUrl()) + '">Review project \u2192</a></div>';
+
+      function fadeIn() {
+        var g = self.group();
+        if (!g) return;
+        g.style.opacity = '0';
+        g.style.transition = 'opacity 75ms linear';
+        void g.offsetWidth;                            // commit 0 before animating
+        g.style.opacity = '1';
+      }
+
+      if (this.faded) { commit(); fadeIn(); return; }  // already hidden: swap now
+
+      var g0 = this.group();
+      if (!g0) { commit(); return; }
+      g0.style.transition = 'opacity 75ms linear';
+      g0.style.opacity = '0';
+      this.faded = true;
+      this.swap = setTimeout(function () {
+        self.swap = null;
+        commit();
+        fadeIn();
+      }, 75);
+    }
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Dock chrome — measured reserve, menu and keyboard suppression         */
+  /* The observer writes only --bh-dock-measured-reserve so the CSS state   */
+  /* classes can still override --mobile-dock-reserve.                     */
+  /* ------------------------------------------------------------------ */
+  var dockFx = {
+    MOBILE: '(max-width: 767px)',
+    KB_DELTA: 150,
+    RESTORE_MS: 100,
+    last: 0,
+    kbTimer: null,
+
+    small: function () { return !!(win.matchMedia && win.matchMedia(this.MOBILE).matches); },
+
+    kbOpen: function () {
+      var vv = win.visualViewport;
+      return !!vv && (win.innerHeight - vv.height) > this.KB_DELTA;
+    },
+
+    measure: function () {
+      var bar = $('#bhBar');
+      if (!bar || !this.small()) return;
+      var h = bar.offsetHeight;
+      if (!h) return;                                  // hidden: keep the last valid value
+      this.last = h + 16;
+      doc.documentElement.style.setProperty('--bh-dock-measured-reserve', this.last + 'px');
+    },
+
+    /* Immediate, synchronous removal with no timer. Used above 767px.      */
+    clearKb: function () {
+      if (this.kbTimer) { clearTimeout(this.kbTimer); this.kbTimer = null; }
+      doc.documentElement.classList.remove('bh-kbopen');
+    },
+
+    /* on:  add immediately and cancel any pending removal                  */
+    /* off: remove only after a stable RESTORE_MS, re-checked on fire, and  */
+    /*      independently of whether a field still holds focus              */
+    setKb: function (on) {
+      var self = this, root = doc.documentElement;
+      if (this.kbTimer) { clearTimeout(this.kbTimer); this.kbTimer = null; }
+      if (on) { root.classList.add('bh-kbopen'); return; }
+      this.kbTimer = setTimeout(function () {
+        self.kbTimer = null;
+        if (self.kbOpen()) return;                     // keyboard came back
+        if (!win.visualViewport) {
+          var a = doc.activeElement;                   // no viewport signal: trust focus
+          if (a && a.matches && a.matches(FIELDS)) return;
+        }
+        root.classList.remove('bh-kbopen');
+        self.measure();
+      }, this.RESTORE_MS);
+    },
+
+    init: function () {
+      var self = this;
+      doc.documentElement.style.removeProperty('--mobile-dock-reserve');
+      this.measure();
+
+      var bar = $('#bhBar');
+      if (bar && win.ResizeObserver) {
+        new win.ResizeObserver(function () { self.measure(); }).observe(bar);
+      }
+
+      doc.addEventListener('focusin', function (e) {
+        if (!self.small()) return;
+        var t = e.target;
+        if (t && t.matches && t.matches(FIELDS)) self.setKb(true);
+      });
+
+      doc.addEventListener('focusout', function () {
+        if (!self.small()) return;
+        self.setKb(false);                             // cancelled by a focusin in the same tick
+      });
+
+      if (win.visualViewport) {
+        win.visualViewport.addEventListener('resize', function () {
+          if (!self.small()) { self.clearKb(); return; }   // desktop: never toggles the class
+          self.setKb(self.kbOpen());
+        });
+      }
+
+      win.addEventListener('resize', function () {
+        if (!self.small()) self.clearKb();
+        else self.measure();
+      });
     }
   };
 
@@ -1051,7 +1362,7 @@
 
     if (catalogue.init()) renderers.push(function (d) { catalogue.render(d); });
     hero.init();
-    if (dock.init()) renderers.push(function (d) { dock.render(d); });
+    if (dock.init()) { renderers.push(function (d) { dock.render(d); }); dockFx.init(); }
     if (review.init()) renderers.push(function (d) { review.render(d); });
 
     if (!renderers.length && !$('#bhQ')) return; // nothing on this page for us
@@ -1070,7 +1381,8 @@
     toggleService: ops.toggleService,
     setFull: ops.setFull,
     acceptSuggestion: ops.acceptSuggestion,
-    setHeroText: ops.setHeroText
+    setHeroText: ops.setHeroText,
+    waContractOk: function () { return dock.assertWa(); }
   };
 
   if (doc.readyState !== 'loading') init();
