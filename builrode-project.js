@@ -1,4 +1,4 @@
-/*! builrode-project.js v2.2.0
+/*! builrode-project.js v2.3.0
  *  Single controller for the Builrode project state.
  *  Replaces the fifteen legacy Home v2 page scripts.
  *
@@ -78,12 +78,20 @@
  *  Mobile-only by CSS; this file renders identically at every width and the
  *  injectors hide #bhBar at >=768px.
  *  Rollback: re-pin 2.1.3 @ 88d94eb5 and remove the v31dockcss* injectors.
+ *
+ *  2.3.0 — Review inline description, gated by #rv-desc inside #bhReview.
+ *  Without that textarea, the legacy editor path remains active. The 2.2.0
+ *  dock renderer/effects and schema-1 storage contract are preserved.
+ *  Inline descriptions retain their raw string through the existing heroText
+ *  payload field. Native Webflow capture still owns submission and receipts.
+ *  Deploy the controller first, then the matching Review page changes.
+ *  Restoring an older controller requires restoring its compatible page first.
  */
 (function (win, doc) {
   'use strict';
   if (win.BuilrodeProject) return;
 
-  var VERSION = '2.2.0';
+  var VERSION = '2.3.0';
   var SCHEMA = 1;
   var KEY = 'bh_project';
   var TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -299,7 +307,11 @@
       set(patch);
     },
     acceptSuggestion: function (k) { ops.addService(k, true); },
-    setHeroText: function (t) { set({ heroText: String(t || '').trim() }); }
+    setHeroText: function (t) {
+      var value = String(t || '');
+      // Retain legacy trimming on Home and on Review without the inline field.
+      set({ heroText: review && review.inline ? value : value.trim() });
+    }
   };
 
   /* ------------------------------------------------------------------ */
@@ -738,6 +750,8 @@
     init: function () {
       var root = this.root = $('#bhReview');
       if (!root) return false;
+      this.description = $('#rv-desc', root);
+      this.inline = !!this.description && this.description.tagName === 'TEXTAREA';
       var waLink = $('[data-r="photos"]', root) || $('a[href*="wa.me"]', root);
       this.waNumber = ((waLink && waLink.getAttribute('href')) || DEFAULT_WA).split('?')[0].replace(/\D/g, '');
       this.editing = false;
@@ -858,7 +872,108 @@
       var ta = $('[data-r="edit-text"]', root);
       if (ta) ta.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.preventDefault(); self.closeEditor(); } });
       $$('input', root).forEach(function (i) { i.addEventListener('input', function () { self.error(''); }); });
+      if (this.inline) this.bindDescription();
       return true;
+    },
+
+    // The page owns markup and styling. This path is enabled only by #rv-desc.
+    bindDescription: function () {
+      var self = this, ta = this.description;
+      ta.addEventListener('compositionstart', function () { self.composing = true; });
+      ta.addEventListener('input', function () { self.flushDescription(); });
+      ta.addEventListener('compositionend', function () {
+        self.composing = false;
+        self.flushDescription();
+      });
+      ta.addEventListener('blur', function () {
+        self.composing = false;
+        self.flushDescription();
+      });
+      win.addEventListener('pagehide', function () { self.flushDescription(); });
+      win.addEventListener('pageshow', function (e) {
+        if (!e.persisted || self.inFlight || self.submitted) return;
+        // Home may have changed choices while this Review was in the back cache.
+        // Never write the stale cached Review state over those choices.
+        var loaded = store.load();
+        if (store.memoryOnly) return;
+        self.composing = false;
+        S = loaded || fresh();
+        restored = !!loaded;
+        emit();
+      });
+    },
+
+    flushDescription: function () {
+      if (!this.inline || this.inFlight || this.submitted) return;
+      var value = this.description.value;
+      if (value !== S.heroText) ops.setHeroText(value);
+    },
+
+    descriptionProblem: function () {
+      if (!(S.fullRenovation || S.services.length) && !S.heroText.trim()) {
+        return 'Choose a service above, or describe the work here — either is enough.';
+      }
+      if (S.heroText.length > 1000) return 'Keep the description within 1,000 characters.';
+      return '';
+    },
+
+    descriptionError: function (msg) {
+      if (!this.inline) return;
+      this.descriptionMessage = msg || '';
+      var el = $('[data-r="desc-error"]', this.root), ta = this.description;
+      if (el) {
+        if (!el.id) el.id = 'rv-desc-error';
+        el.textContent = msg || '';
+        el.hidden = !msg;
+        // The existing controller live region announces the error once.
+        el.removeAttribute('role');
+        show(el, !!msg);
+      }
+      var id = el ? el.id : 'rv-desc-error';
+      var ids = (ta.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (v) {
+        return v && v !== id;
+      });
+      if (msg) {
+        ta.setAttribute('aria-invalid', 'true');
+        if (el) ids.push(id);
+      } else ta.removeAttribute('aria-invalid');
+      if (ids.length) ta.setAttribute('aria-describedby', ids.join(' '));
+      else ta.removeAttribute('aria-describedby');
+    },
+
+    renderDescription: function () {
+      var ta = this.description;
+      // clear() must discard even an unfinished composition, never resurrect it.
+      if (!S.leadId) this.composing = false;
+      if (!this.composing && ta.value !== S.heroText) ta.value = S.heroText;
+      var optional = $('[data-r="desc-optional"]', this.root);
+      var selected = S.fullRenovation || S.services.length > 0;
+      if (optional) { optional.hidden = !selected; show(optional, selected); }
+      if (!ta.value) {
+        var examples = {
+          'Kitchen': 'Replace the kitchen counter and add more storage',
+          'Bathroom': 'Replace the bathroom tiles and fix the damp patch below the window',
+          'Painting': 'Repaint two bedrooms and the living room',
+          'Waterproofing': 'Damp on the bedroom wall after rain',
+          'Flooring': 'Replace the living room flooring',
+          'False ceiling': 'False ceiling with lighting in the living room',
+          'Doors and windows': 'Replace two bedroom doors',
+          'Electrical': 'Add points in the kitchen and fix a tripping switch',
+          'Carpentry': 'Build a study table and two wardrobes',
+          'Wardrobes': 'Two wardrobes in the bedrooms',
+          'Home repairs': 'A few small repairs around the flat',
+          'Full renovation': 'Full renovation of a 3 BHK, kitchen and bathrooms first'
+        };
+        ta.placeholder = examples[S.fullRenovation ? FULL : S.services[0]] || 'Tell us what needs doing';
+      }
+      if (this.descriptionMessage) {
+        var previous = this.descriptionMessage, next = this.descriptionProblem();
+        if (previous !== next) {
+          this.descriptionError(next);
+          var summary = $('[data-r="error"]', this.root);
+          if (!summary || summary.textContent === previous) this.error(next);
+        }
+      }
     },
 
     /* Observe this form's native outcome blocks. Form visibility alone can change
@@ -911,7 +1026,7 @@
         if (this.lockedInputs) return;
         this.lockedInputs = [];
         var self = this;
-        ['[name="locality"]', '[name="whatsapp"]', '[data-r="edit-text"]'].forEach(function (sel) {
+        ['[name="locality"]', '[name="whatsapp"]', this.inline ? '#rv-desc' : '[data-r="edit-text"]'].forEach(function (sel) {
           var el = $(sel, self.root);
           if (!el) return;
           self.lockedInputs.push({ el: el, readOnly: el.readOnly });
@@ -925,6 +1040,7 @@
     },
 
     openEditor: function () {
+      if (this.inline) { this.description.focus(); return; }
       var root = this.root;
       var ed = $('[data-r="editor"]', root), ta = $('[data-r="edit-text"]', root);
       if (!ed || !ta) return;
@@ -936,11 +1052,13 @@
       try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) { /* older browsers */ }
     },
     saveEditor: function () {
+      if (this.inline) { this.flushDescription(); return; }
       var ta = $('[data-r="edit-text"]', this.root);
       if (ta) ops.setHeroText(ta.value.slice(0, 1000)); // selections untouched; suggestions re-derive
       this.closeEditor();
     },
     closeEditor: function () {
+      if (this.inline) { this.flushDescription(); return; }
       var root = this.root;
       this.editing = false;
       show($('[data-r="editor"]', root), false);
@@ -973,6 +1091,11 @@
       clearTimeout(this.watchdog);
       this.lockDraft(false);
       this.resetNativeOutcome();
+      if (this.inline) {
+        this.composing = false;
+        this.description.value = '';
+        this.descriptionError('');
+      }
       $$('input', root).forEach(function (i) { if (i.type !== 'submit') i.value = ''; });
       $$('[data-r="start"]', root).forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
       this.busy(false);
@@ -991,6 +1114,7 @@
       root.setAttribute('data-entry', d.entrySource);
 
       if (this.submitted) {
+        if (this.inline) this.description.value = '';
         ['empty', 'text', 'full', 'list', 'suggest', 'form'].forEach(function (r) {
           show($('[data-r="' + r + '"]', root), false);
         });
@@ -999,15 +1123,16 @@
       }
       show($('[data-r="success"]', root), false);
 
-      show($('[data-r="empty"]', root), d.isEmpty);
-      show($('[data-r="text"]', root), d.hasText || this.editing);
+      show($('[data-r="empty"]', root), !this.inline && d.isEmpty);
+      show($('[data-r="text"]', root), this.inline || d.hasText || this.editing);
       var quote = $('[data-r="quote"]', root);
       if (quote) {
         quote.textContent = S.heroText;
         quote.classList.toggle('is-long', S.heroText.length > LONG_TEXT || /\n/.test(S.heroText));
-        show(quote, !this.editing);
+        show(quote, !this.inline && !this.editing);
       }
-      show($('[data-r="edit"]', root), !this.editing);
+      show($('[data-r="edit"]', root), !this.inline && !this.editing);
+      if (this.inline) this.renderDescription();
 
       show($('[data-r="full"]', root), S.fullRenovation);
       $$('[data-r="focus"] [data-k]', root).forEach(function (c) {
@@ -1032,7 +1157,7 @@
         show(row, k === FULL ? !S.fullRenovation : !has(S.services, k));
       });
 
-      show($('[data-r="form"]', root), !d.isEmpty);
+      show($('[data-r="form"]', root), this.inline || !d.isEmpty);
     },
 
     error: function (msg) {
@@ -1084,7 +1209,10 @@
     validate: function (f) {
       var d = derive(S);
       if (f.honeypot) return 'Something went wrong. Please try again.';
-      if (d.isEmpty) return 'Add at least one service, or describe what you need.';
+      if (this.inline) {
+        var problem = this.descriptionProblem();
+        if (problem) return problem;
+      } else if (d.isEmpty) return 'Add at least one service, or describe what you need.';
       if (f.locality.length < 2) return 'Tell us where the home is.';
       if (!f.start) return 'Choose when you want to start.';
       if (!/^[6-9]\d{9}$/.test(f.whatsapp)) return 'Enter a 10-digit WhatsApp number.';
@@ -1207,6 +1335,7 @@
       var self = this, root = this.root;
       function stop() { e.preventDefault(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); }
       if (this.inFlight || this.submitted) { stop(); return; }
+      if (this.inline) this.flushDescription();
       if (this.editing) {
         stop();
         this.error('Save or cancel your description edit before sending.');
@@ -1216,6 +1345,7 @@
       }
       var f = this.read();
       var err = this.validate(f);
+      if (this.inline) this.descriptionError(f.honeypot ? '' : this.descriptionProblem());
       if (err) {
         stop();
         this.error(err);
@@ -1245,7 +1375,8 @@
 
     focusProblem: function (f) {
       var root = this.root, el = null;
-      if (f.locality.length < 2) el = $('[name="locality"]', root);
+      if (this.inline && !f.honeypot && this.descriptionProblem()) el = this.description;
+      else if (f.locality.length < 2) el = $('[name="locality"]', root);
       else if (!f.start) el = $('[data-r="start"]', root);
       else if (!/^[6-9]\d{9}$/.test(f.whatsapp)) el = $('[name="whatsapp"]', root);
       if (el && el.focus) { try { el.focus(); } catch (err) { /* not focusable */ } }
