@@ -1,9 +1,11 @@
-/*! Builrode enquiry-summary PDF 1.0.3 — A4, Inter embedded, dark closing band.
+/*! Builrode enquiry-summary PDF 1.0.4 — A4, Inter embedded, dark closing band.
+ *  1.0.4 (19 Oct 2026): Home interiors (controller 2.2.2/2.3.2; New flat interiors kept for older enquiries) and the
+ *  optional home type, shown in grey under Home location. Rollback: re-pin 1.0.3.
  *  1.0.3 (19 Oct 2026): icons and lines for the controller 2.2.1/2.3.1 services — New flat interiors,
  *  Wall panels, Plumbing, TV units and woodwork (Carpentry kept for older enquiries). Rollback: re-pin 1.0.2.
  *  Runs in the browser (Save summary control) and in Node (test harness) with the same code.
  *  build(input, deps) → Promise<{ blob|buffer, pages, filename }>
- *  input  = { ref, submittedAt, replyBy?, name?, phone, location, start, fullRenovation, services[], note? }
+ *  input  = { ref, submittedAt, replyBy?, name?, phone, location, homeType?, start, fullRenovation, services[], note? }
  *  deps   = { jsPDF, QRCode, assets }   assets = { fonts:{regular,semibold,display (base64)}, images:{...dataURIs} }
  *  Every displayed value is derived from `submittedAt`, so a later download reproduces the original date and deadline. */
 (function (root, factory) {
@@ -11,17 +13,17 @@
   else root.BuilrodeSummaryPDF = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
-  const VERSION = '1.0.3';
+  const VERSION = '1.0.4';
   const BUSINESS_WA = '918383056889', BUSINESS_WA_TEXT = '+91 83830 56889';
   const C = {
     text: '#1A1614', grey: '#6E6963', grey2: '#8A8580', rule: '#C9C6C0', hair: '#E4E2DD', ring: '#BDB8B1', green: '#278158', white: '#FFFFFF',
     band: '#1A1614', bandRule: '#3A3430', onDark: '#FFFFFF', onDark2: '#B4AFA9', onDark3: '#8F8A84', waDark: '#86CFA6'
   };
   const ICON = { 'Full renovation': 'home', 'Kitchen': 'tools-kitchen-2', 'Bathroom': 'bath', 'Wardrobes': 'hanger', 'Painting': 'paint', 'Waterproofing': 'droplet',
-    'Flooring': 'layout-grid', 'False ceiling': 'layers-subtract', 'Doors and windows': 'door', 'Carpentry': 'hammer', 'Carpentry & wardrobes': 'hammer', 'TV units and woodwork': 'hammer', 'Plumbing': 'droplet', 'Wall panels': 'layout-grid', 'New flat interiors': 'tool', 'Electrical': 'bolt', 'Home repairs': 'tool' };
+    'Flooring': 'layout-grid', 'False ceiling': 'layers-subtract', 'Doors and windows': 'door', 'Carpentry': 'hammer', 'Carpentry & wardrobes': 'hammer', 'TV units and woodwork': 'hammer', 'Plumbing': 'droplet', 'Wall panels': 'layout-grid', 'New flat interiors': 'tool', 'Home interiors': 'tool', 'Electrical': 'bolt', 'Home repairs': 'tool' };
   const DESC = { 'Full renovation': 'Whole home', 'Kitchen': 'New modular kitchen or renovation', 'Bathroom': 'Retiling, fittings or full renovation', 'Wardrobes': 'Wardrobes and storage',
     'Painting': 'Interior painting', 'Waterproofing': 'Seepage and leak repair', 'Flooring': 'Tile, marble and wooden floors', 'False ceiling': 'Gypsum and POP ceilings',
-    'Doors and windows': 'Repair or replacement', 'Carpentry': 'Wardrobes, TV units and woodwork', 'Carpentry & wardrobes': 'Wardrobes, TV units and woodwork', 'TV units and woodwork': 'Shelves, cabinets, furniture', 'New flat interiors': 'Complete interiors for a new flat', 'Wall panels': 'Fluted, wood and PVC panels', 'Plumbing': 'Leaks, fittings, new lines', 'Electrical': 'Wiring, points and fittings', 'Home repairs': 'Cracks, plaster, small fixes' };
+    'Doors and windows': 'Repair or replacement', 'Carpentry': 'Wardrobes, TV units and woodwork', 'Carpentry & wardrobes': 'Wardrobes, TV units and woodwork', 'TV units and woodwork': 'Shelves, cabinets, furniture', 'New flat interiors': 'Complete interiors for a new flat', 'Home interiors': 'Kitchen, wardrobes, ceilings and furniture', 'Wall panels': 'Fluted, wood and PVC panels', 'Plumbing': 'Leaks, fittings, new lines', 'Electrical': 'Wiring, points and fittings', 'Home repairs': 'Cracks, plaster, small fixes' };
   const IST = 'Asia/Kolkata';
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -68,7 +70,7 @@
     return {
       ref: inp.ref, sentDate: fmtDate(p), sentTime: fmtTime(p), replyBy: fmtDay(istParts(reply)),
       start: inp.start || '\u2014', startSub: win ? 'Approx. ' + win : (String(inp.start || '').toLowerCase().indexOf('explor') >= 0 ? 'No date yet' : null),
-      name: inp.name ? String(inp.name).trim() : null, phone: formatPhone(inp.phone), location: String(inp.location || '').trim(),
+      name: inp.name ? String(inp.name).trim() : null, phone: formatPhone(inp.phone), location: String(inp.location || '').trim(), homeType: inp.homeType ? String(inp.homeType).trim() || null : null,
       services, note: inp.note ? String(inp.note).trim() : null,
       steps: [
         { title: 'Received', detail: 'With the Builrode team now.', when: 'Done', done: true },
@@ -181,8 +183,8 @@
     const cw = W / 3, gap = 16;
     const rows = [
       [{ l: 'REFERENCE', v: d.ref, strong: true }, { l: 'SUBMITTED', v: d.sentDate, sub: d.sentTime }, { l: 'PREFERRED START', v: d.start, sub: d.startSub }],
-      d.name ? [{ l: 'NAME', v: d.name }, { l: 'YOUR WHATSAPP', v: d.phone }, { l: 'HOME LOCATION', v: d.location }]
-             : [{ l: 'YOUR WHATSAPP', v: d.phone }, { l: 'HOME LOCATION', v: d.location, span: 2 }]
+      d.name ? [{ l: 'NAME', v: d.name }, { l: 'YOUR WHATSAPP', v: d.phone }, { l: 'HOME LOCATION', v: d.location, sub: d.homeType }]
+             : [{ l: 'YOUR WHATSAPP', v: d.phone }, { l: 'HOME LOCATION', v: d.location, sub: d.homeType, span: 2 }]
     ];
     rows.forEach((row, ri) => {
       let x = M, bottom = 0;
