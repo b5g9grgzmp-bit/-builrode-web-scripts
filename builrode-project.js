@@ -1,4 +1,4 @@
-/*! builrode-project.js v2.2.1
+/*! builrode-project.js v2.2.2
  *  Single controller for the Builrode project state.
  *  Replaces the fifteen legacy Home v2 page scripts.
  *
@@ -58,6 +58,19 @@
  *    SCHEMA 1 — today's taxonomy. Bump to 2 at Release 2 (Carpentry & wardrobes merge);
  *    v1 projects then expire safely on load instead of carrying stale service names.
  *
+ *  ── 2.2.2 — 19 Oct 2026 — Home interiors and home type ───────────────────
+ *  New flat interiors becomes Home interiors, the interiors tick inside the
+ *  Full renovation card; projects saved under the old name are converted on
+ *  load (RENAMED). Adds an optional home type (Apartment, Villa, Independent
+ *  house, Builder floor) chosen from [data-ht] buttons inside that card. It is
+ *  kept with the project as homeType ('' when unset; an unknown stored value
+ *  reads as '') and sent only while Full renovation or Home interiors is
+ *  chosen: payload home.homeType, form field homeType, and the WhatsApp
+ *  fallback and photos messages. Tapping the chosen type again clears it.
+ *  SCHEMA stays 1: the field is optional and older projects load with it empty.
+ *  Designer: the interiors tile carries data-k "Home interiors".
+ *  Rollback: re-pin 2.2.1 @ 82d44db2 and restore the New flat interiors data-k.
+ *
  *  ── 2.2.1 — 19 Oct 2026 — Service taxonomy update ─────────────────────────
  *  Adds three services: New flat interiors, Wall panels and Plumbing (split
  *  out of Home repairs, which keeps cracks, plaster and general repairs).
@@ -93,11 +106,12 @@
   'use strict';
   if (win.BuilrodeProject) return;
 
-  var VERSION = '2.2.1';
+  var VERSION = '2.2.2';
   var SCHEMA = 1;
   var KEY = 'bh_project';
   var TTL_MS = 14 * 24 * 60 * 60 * 1000;
   var FULL = 'Full renovation';
+  var INTERIORS = 'Home interiors'; // 2.2.2: the interiors tick inside the Full renovation card
   var DEFAULT_REVIEW = '/review';
   var DEFAULT_TEL = 'tel:+918383056889';
   var DEFAULT_WA = 'https://wa.me/918383056889';
@@ -115,7 +129,7 @@
     ['Waterproofing', 'seepage damp seelan leak tapak paani moisture'],
     ['Bathroom', 'bathroom washroom toilet shower geyser tile'],
     ['Kitchen', 'kitchen rasoi modular chimney cabinet'],
-    ['New flat interiors', 'interior possession'],
+    [INTERIORS, 'interior possession'],
     ['Painting', 'paint putty safedi repaint whitewash'],
     ['Wall panels', 'panel paneling panelling fluted wallpaper texture'],
     ['Wardrobes', 'wardrobe almirah almari cupboard closet'],
@@ -130,7 +144,8 @@
   ];
   var BROKEN = ['not working', 'broken', 'fault', 'choke', 'burst', 'damage', 'kharab'];
   var SERVICES = WORDS.map(function (e) { return e[0]; }); // the allowed-key list, FULL included
-  var RENAMED = { 'Carpentry': 'TV units and woodwork' };  // 2.2.1: old stored name -> current key
+  var RENAMED = { 'Carpentry': 'TV units and woodwork', 'New flat interiors': INTERIORS }; // 2.2.1/2.2.2: old stored name -> current key
+  var HOME_TYPES = ['Apartment', 'Villa', 'Independent house', 'Builder floor']; // 2.2.2: [data-ht] values
   function known(k) { return has(SERVICES, k); }
   function unique(arr) { return arr.every(function (v, i) { return arr.indexOf(v) === i; }); }
 
@@ -185,6 +200,7 @@
       sourcePage: null,        // pathname where the project was first created
       heroText: '',
       fullRenovation: false,
+      homeType: '',            // 2.2.2: one of HOME_TYPES, or '' when not chosen
       services: [],            // data-k names, in tap order
       acceptedSuggestions: [], // services (or FULL) added via the Review suggestion control
       updatedAt: 0
@@ -199,6 +215,7 @@
       typeof s.sourcePage === 'string' &&
       typeof s.heroText === 'string' &&
       typeof s.fullRenovation === 'boolean' &&
+      (s.homeType === '' || has(HOME_TYPES, s.homeType)) &&
       Array.isArray(s.services) && unique(s.services) &&
       s.services.every(function (k) { return known(k) && k !== FULL; }) &&
       Array.isArray(s.acceptedSuggestions) && unique(s.acceptedSuggestions) &&
@@ -210,11 +227,13 @@
   }
 
   // 2.2.1: carry projects saved under a renamed service forward instead of discarding them.
+  // 2.2.2: projects saved before the home type existed (or with an unknown one) read as ''.
   function rename(s) {
     if (!s || typeof s !== 'object') return s;
     function map(a) { return Array.isArray(a) ? a.map(function (k) { return RENAMED[k] || k; }) : a; }
     s.services = map(s.services);
     s.acceptedSuggestions = map(s.acceptedSuggestions);
+    if (!has(HOME_TYPES, s.homeType)) s.homeType = '';
     return s;
   }
 
@@ -257,6 +276,7 @@
       projectMode: s.fullRenovation ? 'full' : 'services',
       entrySource: text && picks ? 'mixed' : text ? 'hero' : 'catalogue',
       focusAreas: s.fullRenovation ? s.services.slice() : [],
+      homeType: s.fullRenovation || has(s.services, INTERIORS) ? s.homeType : '', // 2.2.2: only while the question is on screen
       count: s.services.length,
       hasText: !!text,
       isEmpty: !text && !picks,
@@ -322,6 +342,11 @@
         : without(S.acceptedSuggestions, FULL);
       set(patch);
     },
+    setHomeType: function (t) {
+      t = String(t || '');
+      if (t && !has(HOME_TYPES, t)) { if (win.console) win.console.warn('BuilrodeProject: unknown home type', t); return; }
+      set({ homeType: t });
+    },
     acceptSuggestion: function (k) { ops.addService(k, true); },
     setHeroText: function (t) { set({ heroText: String(t || '').trim() }); }
   };
@@ -372,6 +397,41 @@
       });
       var main = $('#bhMain');
       if (main) main.setAttribute('data-mode', d.projectMode);
+    }
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Home type — 2.2.2. Optional [data-ht] buttons inside the Full        */
+  /* renovation card. The page CSS shows them once Full renovation or     */
+  /* Home interiors is chosen; this only keeps the choice. Tapping the    */
+  /* chosen type again clears it.                                         */
+  /* ------------------------------------------------------------------ */
+  var homeTypes = {
+    els: [],
+    init: function () {
+      var review = $('#bhReview');
+      this.els = $$('[data-ht]').filter(function (el) {
+        return !(review && review.contains(el)) && has(HOME_TYPES, el.getAttribute('data-ht'));
+      });
+      if (!this.els.length) return false;
+      this.els.forEach(function (el) {
+        var t = el.getAttribute('data-ht');
+        function choose() { ops.setHomeType(S.homeType === t ? '' : t); }
+        el.addEventListener('click', choose);
+        if (el.tagName !== 'BUTTON') {
+          el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); }
+          });
+        }
+      });
+      return true;
+    },
+    render: function () {
+      this.els.forEach(function (el) {
+        var on = S.homeType === el.getAttribute('data-ht');
+        el.classList.toggle('on', on);
+        el.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
     }
   };
 
@@ -1133,7 +1193,7 @@
           suggested: suggested,
           acceptedSuggestions: S.acceptedSuggestions.slice()
         },
-        home: { locality: f.locality, startTiming: f.start, startLabel: this.startLabel() },
+        home: { locality: f.locality, homeType: d.homeType, startTiming: f.start, startLabel: this.startLabel() },
         contact: { whatsapp: f.whatsapp },          // ten digits; +91 is added downstream
         attribution: attribution.get(),
         meta: {
@@ -1154,7 +1214,8 @@
       var parts = ['Hi Builrode, my project:'];
       if (what) parts.push(what + '.');
       if (S.heroText) parts.push('"' + S.heroText + '"');
-      if (f.locality) parts.push('Home: ' + f.locality + '.');
+      var home = [d.homeType, f.locality].filter(Boolean).join(', ');
+      if (home) parts.push('Home: ' + home + '.');
       if (f.start) parts.push('Start: ' + f.start.replace(/-/g, ' ') + '.');
       return 'https://wa.me/' + this.waNumber + '?text=' + encodeURIComponent(parts.join(' '));
     },
@@ -1201,6 +1262,7 @@
         suggested: p.project.suggested.join(', '),
         acceptedSuggestions: p.project.acceptedSuggestions.join(', '),
         startTiming: p.home.startTiming,
+        homeType: p.home.homeType || '',
         sourcePage: p.meta.sourcePage || '',
         submissionPage: p.meta.submissionPage,
         projectStartedAt: p.meta.projectStartedAt || '',
@@ -1342,7 +1404,7 @@
 
     photosLink: function (p, what) {
       var text = 'Hi Builrode, I just sent my project enquiry on your website' +
-        (what ? ' (' + what + (p.home.locality ? ' \u00B7 ' + p.home.locality : '') + ')' : '') +
+        (what ? ' (' + [what, p.home.homeType, p.home.locality].filter(Boolean).join(' \u00B7 ') + ')' : '') +
         '. Sharing photos of my home.';
       return 'https://wa.me/' + this.waNumber + '?text=' + encodeURIComponent(text);
     }
@@ -1385,6 +1447,7 @@
     if (loaded) { S = loaded; restored = true; }
 
     if (catalogue.init()) renderers.push(function (d) { catalogue.render(d); });
+    if (homeTypes.init()) renderers.push(function () { homeTypes.render(); });
     hero.init();
     if (dock.init()) { renderers.push(function (d) { dock.render(d); }); dockFx.init(); }
     if (review.init()) renderers.push(function (d) { review.render(d); });
@@ -1406,6 +1469,7 @@
     setFull: ops.setFull,
     acceptSuggestion: ops.acceptSuggestion,
     setHeroText: ops.setHeroText,
+    setHomeType: ops.setHomeType,
     waContractOk: function () { return dock.assertWa(); }
   };
 
