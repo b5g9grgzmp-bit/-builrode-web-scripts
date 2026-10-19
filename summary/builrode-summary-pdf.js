@@ -1,6 +1,7 @@
 /*! Builrode enquiry-summary PDF 1.0.4 — A4, Inter embedded, dark closing band.
  *  1.0.4 (19 Oct 2026): Home interiors (controller 2.2.2/2.3.2; New flat interiors kept for older enquiries) and the
- *  optional home type, shown in grey under Home location. Rollback: re-pin 1.0.3.
+ *  optional home type, shown in grey under Home location. In the browser, save() takes the home type from the Review
+ *  form's homeType field (written by the controller) when the caller's input has none. Rollback: re-pin 1.0.3.
  *  1.0.3 (19 Oct 2026): icons and lines for the controller 2.2.1/2.3.1 services — New flat interiors,
  *  Wall panels, Plumbing, TV units and woodwork (Carpentry kept for older enquiries). Rollback: re-pin 1.0.2.
  *  Runs in the browser (Save summary control) and in Node (test harness) with the same code.
@@ -343,7 +344,14 @@
     const url = cfg.assets; if (!assetsCache[url]) assetsCache[url] = fetch(url).then(r => { if (!r.ok) throw new Error('assets ' + r.status); return r.json(); });
     return { jsPDF: window.jspdf.jsPDF, QRCode: window.QRCode, assets: await assetsCache[url] };
   }
+  // 1.0.4: the Review page's snapshot predates the home type, so read it from the stored form field when absent.
+  function withHomeType(inp) {
+    if (!inp || inp.homeType || typeof document === 'undefined') return inp;
+    const f = document.querySelector('#bhReview form [name="homeType"]');
+    return f && f.value ? Object.assign({}, inp, { homeType: f.value }) : inp;
+  }
   async function save(input, cfg) {
+    input = withHomeType(input);
     const deps = await ready(cfg);
     const out = await build(input, deps);
     const file = new File([out.blob], out.filename, { type: 'application/pdf' });
