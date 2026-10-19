@@ -61,7 +61,7 @@ async function boot(t, { inline = true, stored, home = false, unavailableStorage
   w.eval(source);
   await tick();
   const q = s => d.querySelector(s), api = w.BuilrodeProject;
-  assert.equal(api.version, '2.3.1');
+  assert.equal(api.version, '2.3.2');
   function type(value) { q('#rv-desc').value = value; q('#rv-desc').dispatchEvent(new w.Event('input', { bubbles: true })); }
   function details() {
     q('[name=locality]').value = 'Noida Sector 74';
@@ -100,7 +100,7 @@ for (const [name, choose, description] of [
   const p = await boot(t); p.details(); choose(p); p.type(description); p.submit();
   assert.equal(p.sent.length, 1);
   assert.equal(p.fields().heroText, description);
-  assert.equal(p.fields().controller, '2.3.1');
+  assert.equal(p.fields().controller, '2.3.2');
   if (name.startsWith('Full')) { assert.equal(p.fields().fullRenovation, 'true'); assert.equal(p.fields().focusAreas, ''); }
 });
 
@@ -282,4 +282,76 @@ test('Home without inline markup retains legacy setter and dock behaviour', asyn
   assert.equal(p.q('#bhBar').getAttribute('data-state'), '4');
   assert.equal(p.q('.bhd-label').getAttribute('aria-label'), 'Show Full renovation');
   assert.equal(p.api.waContractOk(), true);
+});
+
+// 2.3.2 — Home interiors key and optional home type
+function savedProject(extra) {
+  const t = Date.now();
+  return JSON.stringify(Object.assign({ version: 1, leadId: '1b2c3d4e-0000-4000-8000-000000000000', startedAt: t, sourcePage: '/',
+    heroText: '', fullRenovation: false, services: [], acceptedSuggestions: [], updatedAt: t }, extra));
+}
+
+test('a project saved as New flat interiors loads as Home interiors with no home type', async t => {
+  const p = await boot(t, { stored: savedProject({ services: ['New flat interiors'], acceptedSuggestions: ['New flat interiors'] }) });
+  assert.deepEqual([...p.api.get().services], ['Home interiors']);
+  assert.deepEqual([...p.api.get().acceptedSuggestions], ['Home interiors']);
+  assert.equal(p.api.get().homeType, '');
+});
+
+test('an unknown stored home type reads as empty and keeps the project', async t => {
+  const p = await boot(t, { stored: savedProject({ services: ['Bathroom'], homeType: 'Castle' }) });
+  assert.deepEqual([...p.api.get().services], ['Bathroom']);
+  assert.equal(p.api.get().homeType, '');
+});
+
+for (const [name, choose, expected] of [
+  ['Full renovation', p => p.api.setFull(true), 'Villa'],
+  ['Home interiors', p => p.api.addService('Home interiors'), 'Villa'],
+  ['a single service only', p => p.api.addService('Bathroom'), '']
+]) test(`home type is sent with ${name}: ${JSON.stringify(expected)}`, async t => {
+  const p = await boot(t); p.details(); choose(p); p.api.setHomeType('Villa'); p.submit();
+  assert.equal(p.sent.length, 1);
+  assert.equal(p.fields().homeType, expected);
+  assert.equal(p.fields().controller, '2.3.2');
+  const wa = decodeURIComponent(p.q('[data-r=fallback]').getAttribute('href') || '');
+  assert.ok(wa.includes(expected ? 'Home: Villa, Noida Sector 74.' : 'Home: Noida Sector 74.'), wa);
+});
+
+test('setHomeType rejects unknown values and clears with an empty string', async t => {
+  const p = await boot(t); p.api.setFull(true);
+  p.api.setHomeType('Builder floor'); assert.equal(p.api.get().homeType, 'Builder floor');
+  p.api.setHomeType('Castle'); assert.equal(p.api.get().homeType, 'Builder floor');
+  p.api.setHomeType(''); assert.equal(p.api.get().homeType, '');
+});
+
+test('homepage home-type buttons toggle, reflect the choice and never touch services', async t => {
+  const html = `<div id="bhMain"><div id="bhGrid"><div data-bhfull="1">
+    <div class="bh-cardwide" data-k="Full renovation" data-x role="checkbox" tabindex="0">Full renovation</div>
+    <div data-k="Home interiors" role="checkbox" tabindex="0">Home interiors</div>
+    <div class="bh-hq"><button type="button" data-ht="Apartment">Apartment</button><button type="button" data-ht="Villa">Villa</button>
+    <button type="button" data-ht="Independent house">Independent house</button><div data-ht="Builder floor" role="button" tabindex="0">Builder floor</div></div>
+  </div><div data-k="Bathroom">Bathroom</div></div></div>`;
+  const p = await boot(t, { home: true, html });
+  const btn = v => p.q(`[data-ht="${v}"]`);
+  assert.equal(btn('Villa').getAttribute('aria-pressed'), 'false');
+  p.q('.bh-cardwide').click();
+  btn('Villa').click();
+  assert.equal(p.api.get().homeType, 'Villa');
+  assert.equal(btn('Villa').getAttribute('aria-pressed'), 'true');
+  assert.ok(btn('Villa').classList.contains('on'));
+  assert.equal(btn('Apartment').getAttribute('aria-pressed'), 'false');
+  assert.equal(p.api.get().fullRenovation, true);
+  assert.deepEqual([...p.api.get().services], []);
+  btn('Villa').click();
+  assert.equal(p.api.get().homeType, '');
+  assert.ok(!btn('Villa').classList.contains('on'));
+  btn('Builder floor').dispatchEvent(new p.w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  assert.equal(p.api.get().homeType, 'Builder floor');
+  assert.equal(JSON.parse(p.stored()).homeType, 'Builder floor');
+  p.q('[data-k="Home interiors"]').click();
+  assert.deepEqual([...p.api.get().services], ['Home interiors']);
+  assert.equal(p.api.derive().homeType, 'Builder floor');
+  p.q('.bh-cardwide').click(); p.q('[data-k="Home interiors"]').click();
+  assert.equal(p.api.derive().homeType, '');          // nothing whole-home chosen: not sent
+  assert.equal(p.api.get().homeType, 'Builder floor'); // but kept, so re-ticking restores it
 });
