@@ -61,7 +61,7 @@ async function boot(t, { inline = true, stored, home = false, unavailableStorage
   w.eval(source);
   await tick();
   const q = s => d.querySelector(s), api = w.BuilrodeProject;
-  assert.equal(api.version, '2.3.0');
+  assert.equal(api.version, '2.3.1');
   function type(value) { q('#rv-desc').value = value; q('#rv-desc').dispatchEvent(new w.Event('input', { bubbles: true })); }
   function details() {
     q('[name=locality]').value = 'Noida Sector 74';
@@ -100,7 +100,7 @@ for (const [name, choose, description] of [
   const p = await boot(t); p.details(); choose(p); p.type(description); p.submit();
   assert.equal(p.sent.length, 1);
   assert.equal(p.fields().heroText, description);
-  assert.equal(p.fields().controller, '2.3.0');
+  assert.equal(p.fields().controller, '2.3.1');
   if (name.startsWith('Full')) { assert.equal(p.fields().fullRenovation, 'true'); assert.equal(p.fields().focusAreas, ''); }
 });
 

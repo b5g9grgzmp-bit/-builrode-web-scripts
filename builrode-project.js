@@ -1,4 +1,4 @@
-/*! builrode-project.js v2.3.0
+/*! builrode-project.js v2.3.1
  *  Single controller for the Builrode project state.
  *  Replaces the fifteen legacy Home v2 page scripts.
  *
@@ -58,6 +58,21 @@
  *    SCHEMA 1 — today's taxonomy. Bump to 2 at Release 2 (Carpentry & wardrobes merge);
  *    v1 projects then expire safely on load instead of carrying stale service names.
  *
+ *  ── 2.3.1 — 19 Oct 2026 — Service taxonomy update on the 2.3.0 Review line ─
+ *  The same taxonomy change as 2.2.1 (below), applied to 2.3.0 so the Review
+ *  page accepts every service the homepage can save. Nothing else changes.
+ *  Rollback: re-pin 2.3.0 @ faf3d8d6 (together with 2.2.0 on the homepage).
+ *
+ *  ── 2.2.1 — 19 Oct 2026 — Service taxonomy update ─────────────────────────
+ *  Adds three services: New flat interiors, Wall panels and Plumbing (split
+ *  out of Home repairs, which keeps cracks, plaster and general repairs).
+ *  Renames Carpentry to TV units and woodwork. Projects saved under the old
+ *  name are converted on load (RENAMED below), so nobody loses a selection;
+ *  SCHEMA stays 1 because no field changed shape. Parser: "whole" now
+ *  suggests Full renovation and "flat" no longer does, so "new flat" points
+ *  at New flat interiors instead. Designer data-k values must match the
+ *  WORDS table exactly. Rollback: re-pin 2.2.0 @ 1de7dc95.
+ *
  *  ── 2.2.0 — 12 Sep 2026 — Project Dock v1.2 ──────────────────────────────
  *  Dock rebuilt to the frozen v1.2 specification. Six states resolved in a
  *  fixed order with Full renovation tested first. No arrows or chevrons.
@@ -91,7 +106,7 @@
   'use strict';
   if (win.BuilrodeProject) return;
 
-  var VERSION = '2.3.0';
+  var VERSION = '2.3.1';
   var SCHEMA = 1;
   var KEY = 'bh_project';
   var TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -113,18 +128,22 @@
     ['Waterproofing', 'seepage damp seelan leak tapak paani moisture'],
     ['Bathroom', 'bathroom washroom toilet shower geyser tile'],
     ['Kitchen', 'kitchen rasoi modular chimney cabinet'],
+    ['New flat interiors', 'interior possession'],
     ['Painting', 'paint putty safedi repaint whitewash'],
+    ['Wall panels', 'panel paneling panelling fluted wallpaper texture'],
     ['Wardrobes', 'wardrobe almirah almari cupboard closet'],
     ['Flooring', 'floor marble granite vitrified laminate'],
     ['False ceiling', 'ceiling pop gypsum'],
     ['Doors and windows', 'door window upvc grill'],
     ['Electrical', 'socket switch wiring mcb electric bijli'],
-    ['Carpentry', 'carpenter carpentry shelf'],
-    ['Home repairs', 'crack darar plumbing plumber tap nal drain pipe'],
-    [FULL, 'full renovation poora ghar entire flat']
+    ['TV units and woodwork', 'carpenter carpentry shelf woodwork tv'],
+    ['Plumbing', 'plumbing plumber tap nal drain pipe flush'],
+    ['Home repairs', 'crack darar plaster repair'],
+    [FULL, 'full renovation poora ghar entire whole']
   ];
   var BROKEN = ['not working', 'broken', 'fault', 'choke', 'burst', 'damage', 'kharab'];
   var SERVICES = WORDS.map(function (e) { return e[0]; }); // the allowed-key list, FULL included
+  var RENAMED = { 'Carpentry': 'TV units and woodwork' };  // 2.2.1: old stored name -> current key
   function known(k) { return has(SERVICES, k); }
   function unique(arr) { return arr.every(function (v, i) { return arr.indexOf(v) === i; }); }
 
@@ -203,6 +222,15 @@
       now() - s.updatedAt < TTL_MS;
   }
 
+  // 2.2.1: carry projects saved under a renamed service forward instead of discarding them.
+  function rename(s) {
+    if (!s || typeof s !== 'object') return s;
+    function map(a) { return Array.isArray(a) ? a.map(function (k) { return RENAMED[k] || k; }) : a; }
+    s.services = map(s.services);
+    s.acceptedSuggestions = map(s.acceptedSuggestions);
+    return s;
+  }
+
   var store = {
     memoryOnly: false, // storage UNAVAILABLE (private mode, quota) — distinct from corrupt data
     load: function () {
@@ -212,6 +240,7 @@
       if (!raw) return null;
       var s = null;
       try { s = JSON.parse(raw); } catch (e) { s = null; } // corrupt → discard below
+      s = rename(s);
       if (!valid(s)) { this.clear(); return null; }
       return s;
     },
