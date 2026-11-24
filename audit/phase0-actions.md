@@ -32,6 +32,12 @@ The "homepage is noindex" finding is withdrawn. The `noindex, nofollow` tag sits
 ## Contact form: finish in the Designer before publishing (about 2 minutes)
 Already staged by API (24 Nov): contact button now "↳ Get free quote" with "Sending…" while loading; homepage label "Location" renamed to "Society or sector".
 
+Also staged (24 Nov), contact address section, using existing theme classes only:
+- Intro sentence moved under the "Reach us" heading (`hub__lead` + `text-paragraph --c1-80`, the same pattern as the Ideas page).
+- Address card is full width on tablet and phone (`contact-v1__info` max-width removed at the tablet breakpoint; desktop unchanged).
+- Render image in the card hidden (visibility off, not deleted). Switch it back on, or swap in a real office photo, in the Designer.
+- Phone number is now a tap-to-call link, plus a "Get directions" link to Google Maps (new tab), both in the theme's `contact-v1__link` style.
+
 The API cannot do these two; open the Contact page in the Designer:
 1. **Remove "Example Text".** Select each of the 4 fields (Full name, Mobile number, Society or sector, Message) → Element settings (gear icon) → clear the **Placeholder** box. Leave it empty, as on the homepage form.
 2. **Put Mobile and Society side by side.** Select the "Society or sector" block (class `form__item`) → Style panel → Grid child → set column span back to **1** (or Auto). It currently spans the full row.
