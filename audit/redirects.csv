@@ -1,0 +1,40 @@
+old_path,new_path,reason
+/discipline/renovation,/discipline/home-renovation,"Indexed by Google, 404 now"
+/discipline/interior-finishing,/discipline/home-interiors,"Indexed by Google, 404 now"
+/project/sandstone-luxe,/ideas,"Indexed by Google, 404 now; item no longer in CMS"
+/photo-diagnosis,/sub-service/waterproofing-seepage-repair,"Indexed by Google, 404 now; old lead page for cracks/damp/leaks"
+/internal/documentation,/,"Indexed by Google, 404 now; template docs page"
+/internal/(.*),/,Template pages; never meant to be public
+/discipline/workplace-consultancy,/services,Old template item (archived/draft); may still be in Google index
+/discipline/urban-landscape-design,/services,Old template item (archived/draft); may still be in Google index
+/discipline/technology-research,/services,Old template item (archived/draft); may still be in Google index
+/discipline/master-planning,/services,Old template item (archived/draft); may still be in Google index
+/project/budenberg-apartments,/projects,Old template item (archived/draft); may still be in Google index
+/project/murray-house,/projects,Old template item (archived/draft); may still be in Google index
+/project/harris-beverly-hills,/projects,Old template item (archived/draft); may still be in Google index
+/project/la-porte-residences,/projects,Old template item (archived/draft); may still be in Google index
+/project/awqa-corporate,/projects,Old template item (archived/draft); may still be in Google index
+/project/249-central-park,/projects,Old template item (archived/draft); may still be in Google index
+/project/mahala-villas,/projects,Old template item (archived/draft); may still be in Google index
+/project/edl-center-for-brain-sciences,/projects,Old template item (archived/draft); may still be in Google index
+/project/tecko-headquartes,/projects,Old template item (archived/draft); may still be in Google index
+/project/imperial-desert-museum,/projects,Old template item (archived/draft); may still be in Google index
+/project/odj-devs,/projects,Old template item (archived/draft); may still be in Google index
+/project/makati-ny,/projects,Old template item (archived/draft); may still be in Google index
+/project/al-burj-masterplan,/projects,Old template item (archived/draft); may still be in Google index
+/project/west-center-residential,/projects,Old template item (archived/draft); may still be in Google index
+/project/hadd-campus,/projects,Old template item (archived/draft); may still be in Google index
+/market/mixed-use,/services,Old template item (archived/draft); may still be in Google index
+/market/health-education,/services,Old template item (archived/draft); may still be in Google index
+/market/offices-headquarters,/services,Old template item (archived/draft); may still be in Google index
+/market/hospitality-leisure,/services,Old template item (archived/draft); may still be in Google index
+/market/arts-culture,/services,Old template item (archived/draft); may still be in Google index
+/article/social-and-environmental-well-being-in-the-workplace-is-an-architectural-goal,/news,Old template item (archived/draft); may still be in Google index
+/article/building-from-the-models-up-why-its-important-and-how-we-do-it-at-fusca-architects,/news,Old template item (archived/draft); may still be in Google index
+/article/the-art-and-science-of-adaptive-reuse,/news,Old template item (archived/draft); may still be in Google index
+/article/fusca-ouo-home-a-new-partnership-visioning-a-minimalistic-furniture,/news,Old template item (archived/draft); may still be in Google index
+/article/towards-artificial-intelligence-in-architecture,/news,Old template item (archived/draft); may still be in Google index
+/article/seeking-a-visual-language-drawing-and-design-communications-at-fusca,/news,Old template item (archived/draft); may still be in Google index
+/article/the-future-of-cities-with-katy-moser,/news,Old template item (archived/draft); may still be in Google index
+/article/heritage-and-innovation-when-history-meets-contemporary-principles-and-ethical-design,/news,Old template item (archived/draft); may still be in Google index
+/article/fusca-architects-revealed-the-ai-bujr-masterplan-in-the-uae,/news,Old template item (archived/draft); may still be in Google index

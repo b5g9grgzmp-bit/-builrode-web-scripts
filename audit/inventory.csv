@@ -1,0 +1,134 @@
+type,url,name,status,seo_title,has_meta_description,in_sitemap_flag,note
+static,/,Home,live,"Builrode | Home Interiors & Renovation, Noida",yes,yes,
+static,/services,Services,live,Services | Builrode,yes,yes,
+static,/about,About,live,About | Builrode,yes,yes,
+static,/contact,Contact,live,Contact | Builrode,yes,yes,
+static,/projects,Projects,live,Projects | Builrode,NO,yes,
+static,/news,Blog & Newsletter,live,Blog & Newsletter | Builrode,yes,yes,
+static,/ideas,Ideas,live,Home design photos and ideas | Builrode,yes,yes,
+static,/privacy-policy,Privacy Policy,live,Privacy Policy | Builrode,NO,yes,
+static,/design-lab,Design Lab,draft,,,no (set 24 Nov),
+static,/contact-v2,Contact (v2),draft,,,no (set 24 Nov),
+static,/contact-v3,Contact (v3),draft,,,no (set 24 Nov),
+static,/about-v3,About (v3),draft,,,no (set 24 Nov),
+static,/about-v1,About (v1 old),draft,,,no (set 24 Nov),
+static,/home-v3,Home (v3),draft,,,no (set 24 Nov),
+static,/home-v2,Home (v2),draft,,,no (set 24 Nov),
+static,/untitled,Page Starter,draft,,,no (set 24 Nov),
+static,/internal/licenses,Licenses,draft,,,no (set 24 Nov),
+static,/internal/changelog,Changelog,draft,,,no (set 24 Nov),
+static,/internal/documentation,Documentation,draft,,,no (set 24 Nov),
+static,/internal/style-guide,Style Guide,draft,,,no (set 24 Nov),
+disciplines,/discipline/workplace-consultancy,Workplace Consultancy,archived,template,NO (template has no description field),n/a,
+disciplines,/discipline/urban-landscape-design,Urban & Landscape Design,archived,template,NO (template has no description field),n/a,
+disciplines,/discipline/technology-research,Technology & Research,archived,template,NO (template has no description field),n/a,
+disciplines,/discipline/master-planning,Master Planning,archived,template,NO (template has no description field),n/a,
+disciplines,/discipline/home-construction,Home Construction,live,template,NO (template has no description field),yes,
+disciplines,/discipline/home-interiors,Home Interiors,live,template,NO (template has no description field),yes,
+disciplines,/discipline/home-renovation,Home Renovation,live,template,NO (template has no description field),yes,
+sub-services,/sub-service/front-elevation-exterior,Front elevation & exterior,live,template,NO (field empty),yes,
+sub-services,/sub-service/drawings-approvals,Drawings & approvals,live,template,NO (field empty),yes,show-on-site = false
+sub-services,/sub-service/foyer-crockery-units,Foyer & crockery units,live,template,NO (field empty),yes,
+sub-services,/sub-service/renovate-or-rebuild,Renovate or rebuild? Engineer's assessment,live,template,NO (field empty),yes,
+sub-services,/sub-service/structural-repair-strengthening,Structural repair & strengthening,live,template,NO (field empty),yes,
+sub-services,/sub-service/additional-floor,Additional floor,live,template,NO (field empty),yes,
+sub-services,/sub-service/builder-floor-construction,Builder floor construction,live,template,NO (field empty),yes,
+sub-services,/sub-service/house-construction,House construction,live,template,NO (field empty),yes,
+sub-services,/sub-service/layout-wall-changes,Layout & wall changes,live,template,NO (field empty),yes,
+sub-services,/sub-service/doors-windows-balcony,"Doors, windows & balcony",live,template,NO (field empty),yes,
+sub-services,/sub-service/electrical-plumbing-work,Electrical & plumbing work,live,template,NO (field empty),yes,
+sub-services,/sub-service/waterproofing-seepage-repair,Waterproofing & seepage repair,live,template,NO (field empty),yes,
+sub-services,/sub-service/house-painting-textures,House painting & textures,live,template,NO (field empty),yes,
+sub-services,/sub-service/flooring-tiling,Flooring & tiling,live,template,NO (field empty),yes,
+sub-services,/sub-service/room-renovation,Room renovation,live,template,NO (field empty),yes,
+sub-services,/sub-service/bathroom-renovation,Bathroom renovation,live,template,NO (field empty),yes,
+sub-services,/sub-service/kitchen-renovation,Kitchen renovation,live,template,yes,yes,
+sub-services,/sub-service/full-home-renovation,Full home renovation,live,template,NO (field empty),yes,
+sub-services,/sub-service/pooja-unit-home-office,Pooja unit & home office,live,template,NO (field empty),yes,
+sub-services,/sub-service/tv-units-wall-panelling,TV units & wall panelling,live,template,NO (field empty),yes,
+sub-services,/sub-service/false-ceiling-lighting,False ceiling & lighting,live,template,NO (field empty),yes,
+sub-services,/sub-service/wardrobes-storage,Wardrobes & storage,live,template,NO (field empty),yes,
+sub-services,/sub-service/living-dining-interiors,Living & dining interiors,live,template,NO (field empty),yes,
+sub-services,/sub-service/bedroom-interiors,Bedroom interiors,live,template,NO (field empty),yes,
+sub-services,/sub-service/modular-kitchen,Modular kitchen,live,template,NO (field empty),yes,
+sub-services,/sub-service/full-home-interiors,Full home interiors,live,template,NO (field empty),yes,
+projects,/project/budenberg-apartments,Budenberg Apartments,archived,template,NO (field empty),n/a,
+projects,/project/murray-house,Murray House,archived,template,NO (field empty),n/a,
+projects,/project/harris-beverly-hills,Harris Beverly Hills,archived,template,NO (field empty),n/a,
+projects,/project/la-porte-residences,La Porte Residences,archived,template,NO (field empty),n/a,
+projects,/project/awqa-corporate,AWQA Corporate,archived,template,NO (field empty),n/a,
+projects,/project/249-central-park,249 Central Park,archived,template,NO (field empty),n/a,
+projects,/project/mahala-villas,Mahala Villas,archived,template,NO (field empty),n/a,
+projects,/project/edl-center-for-brain-sciences,EDL Center for Brain Sciences ,archived,template,NO (field empty),n/a,
+projects,/project/tecko-headquartes,Tecko Headquartes,archived,template,NO (field empty),n/a,
+projects,/project/imperial-desert-museum,Imperial Desert Museum,archived,template,NO (field empty),n/a,
+projects,/project/odj-devs,ODJ Devs,archived,template,NO (field empty),n/a,
+projects,/project/makati-ny,Makati NY,archived,template,NO (field empty),n/a,
+projects,/project/al-burj-masterplan,Al-Burj Masterplan,archived,template,NO (field empty),n/a,
+projects,/project/west-center-residential,West Center Residential,archived,template,NO (field empty),n/a,
+projects,/project/hadd-campus,HADD Campus,archived,template,NO (field empty),n/a,
+projects,/project/marigold-house,Marigold House,draft,template,yes,n/a,
+projects,/project/blue-tile-house,Blue Tile House,draft,template,yes,n/a,
+projects,/project/ella-vale-house,Ella Vale House,draft,template,yes,n/a,
+articles,/article/compare-flat-renovation-quotes-noida,How to compare two renovation quotes for your Noida flat,draft,template,NO (template has no description field),n/a,
+articles,/article/modular-kitchen-layout-checklist-noida,The Breakfast Test: check your modular kitchen plan before you sign,live,template,NO (template has no description field),yes,
+articles,/article/grap-home-renovation-noida,"Home renovation during GRAP in Noida: what can continue, and what waits",draft,template,NO (template has no description field),n/a,
+articles,/article/social-and-environmental-well-being-in-the-workplace-is-an-architectural-goal,Social and environmental well-being in the workplace is an architectural goal,draft,template,NO (template has no description field),n/a,
+articles,/article/building-from-the-models-up-why-its-important-and-how-we-do-it-at-fusca-architects,Building from the models up: why it's important and how we do it at Fusca Architects,draft,template,NO (template has no description field),n/a,
+articles,/article/the-art-and-science-of-adaptive-reuse,The art and science of adaptive reuse,draft,template,NO (template has no description field),n/a,
+articles,/article/fusca-ouo-home-a-new-partnership-visioning-a-minimalistic-furniture,Fusca & OUO Home: a new partnership visioning a minimalistic furniture,draft,template,NO (template has no description field),n/a,
+articles,/article/towards-artificial-intelligence-in-architecture,Towards Artificial Intelligence in Architecture,draft,template,NO (template has no description field),n/a,
+articles,/article/seeking-a-visual-language-drawing-and-design-communications-at-fusca,Seeking a visual language: drawing and design communications at Fusca,draft,template,NO (template has no description field),n/a,
+articles,/article/the-future-of-cities-with-katy-moser,The future of cities with Katy Moser,draft,template,NO (template has no description field),n/a,
+articles,/article/heritage-and-innovation-when-history-meets-contemporary-principles-and-ethical-design,Heritage and innovation: when history meets contemporary principles and ethical design,draft,template,NO (template has no description field),n/a,
+articles,/article/fusca-architects-revealed-the-ai-bujr-masterplan-in-the-uae,Fusca Architects revealed the AI-Bujr Masterplan in the UAE,draft,template,NO (template has no description field),n/a,
+ideas,/ideas/paneled-blue-cupboards-and-a-cup-shelf,Two-Tone Blue and White Kitchen with a Glass Cup Shelf,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-narrow-kitchen-with-a-breakfast-perch,Narrow Kitchen Layout with a Slim Breakfast Counter,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-crockery-wall-for-the-dining-end,Fluted Glass Crockery Unit for an Open Kitchen and Dining Area,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-u-shaped-kitchen-with-a-clear-middle,U-Shaped Modular Kitchen Design for Noida Apartments,live,template,yes,yes,not in home ideas row
+ideas,/ideas/full-height-storage-beside-the-fridge,Full-Height Kitchen Storage Around the Refrigerator,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-terracotta-cooking-recess,Terracotta Kitchen Cabinets with a Matching Stone Backsplash,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-draining-board-beside-the-sink,Kitchen Sink with an Integrated Draining Board,live,template,yes,yes,not in home ideas row
+ideas,/ideas/navy-drawers-with-brass-handles,Navy Shaker-Style Kitchen Cabinets with Brass Handles,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-small-lit-shelf-for-tea-and-cups,Tea Station with Illuminated Cup Shelves for a Small Kitchen,live,template,yes,yes,not in home ideas row
+ideas,/ideas/burgundy-tile-behind-the-hob,Burgundy Kitchen Backsplash Tiles with Dark Wood Cabinets,live,template,yes,yes,not in home ideas row
+ideas,/ideas/fluted-glass-over-a-timber-shelf,Fluted Glass Kitchen Cabinets with a Wooden Display Shelf,live,template,yes,yes,not in home ideas row
+ideas,/ideas/where-the-kitchen-floor-meets-the-dining-table,Open Kitchen and Dining Layout for a Noida Flat,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-matte-blue-l-with-deep-drawers,Matte Blue L-Shaped Kitchen with Deep Storage Drawers,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-tall-glass-cabinet-at-the-end-of-an-l,L-Shaped Kitchen with a Tall Glass Crockery Cabinet,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-breakfast-appliance-corner,Compact Breakfast Counter with Storage for Small Appliances,live,template,yes,yes,not in home ideas row
+ideas,/ideas/navy-cupboards-over-an-ivory-worktop,Navy and Ivory Kitchen Cabinets with a Brass Tap,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-shelf-for-boards-and-hanging-glasses,Kitchen Storage Tower for Chopping Boards and Stemware,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-breakfast-table-for-two,Small Kitchen Breakfast Nook with a Round Table for Two,live,template,yes,yes,not in home ideas row
+ideas,/ideas/everyday-crockery-in-a-central-niche,Modular Kitchen Storage with an Open Crockery Shelf,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-herb-ledge-by-the-sink,Kitchen Sink Under a Window with a Herb Ledge,live,template,yes,yes,not in home ideas row
+ideas,/ideas/an-l-shaped-kitchen-for-a-small-corner,Small L-Shaped Modular Kitchen Design for Noida Apartments,live,template,yes,yes,not in home ideas row
+ideas,/ideas/walnut-and-bottle-green-tile,Walnut Modular Kitchen with a Bottle-Green Tile Backsplash,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-sink-that-doubles-as-prep-space,Space-Saving Kitchen Sink with a Chopping Board and Drainer,live,template,yes,yes,not in home ideas row
+ideas,/ideas/a-galley-that-ends-at-breakfast,Parallel Kitchen Layout with a Breakfast Table by the Window,live,template,yes,yes,not in home ideas row
+ideas,/ideas/terracotta-below-cream-above,Terracotta and Cream Modular Kitchen Design for Noida Flats,live,template,yes,yes,not in home ideas row
+ideas,/ideas/copper-fittings,Copper fittings,live,template,yes,yes,not in home ideas row
+ideas,/ideas/white-tile-shower,White tile shower,live,template,yes,yes,not in home ideas row
+ideas,/ideas/lit-niche,Lit niche,live,template,yes,yes,not in home ideas row
+ideas,/ideas/dark-marble-shower,Dark marble shower,live,template,yes,yes,not in home ideas row
+ideas,/ideas/corridor-storage,Corridor storage,live,template,yes,yes,
+ideas,/ideas/window-desk,Window desk,live,template,yes,yes,
+ideas,/ideas/blue-tiles,Blue tiles,live,template,yes,yes,
+ideas,/ideas/entry-bench,Entry bench,live,template,yes,yes,
+ideas,/ideas/curved-partition,Curved partition,live,template,yes,yes,
+ideas,/ideas/lit-ceiling,Lit ceiling,live,template,yes,yes,
+ideas,/ideas/foyer-bench,Foyer bench,live,template,yes,yes,
+ideas,/ideas/study-corner,Study corner,live,template,yes,yes,
+ideas,/ideas/warm-living-room,Warm living room,live,template,yes,yes,
+ideas,/ideas/arched-entry,Arched entry,live,template,yes,yes,
+ideas,/ideas/open-plan-dining,Open-plan dining,live,template,yes,yes,
+topics,/topic/news,News,live,template,NO (template has no description field),yes,
+topics,/topic/perspectives,Perspectives,live,template,NO (template has no description field),yes,
+topics,/topic/insights,Insights,live,template,NO (template has no description field),yes,
+markets,/market/kitchen-design-inspiration,Kitchen design inspiration,draft,template,NO (template has no description field),n/a,
+markets,/market/mixed-use,Mixed-Use,archived,template,NO (template has no description field),n/a,
+markets,/market/health-education,Health & Education,archived,template,NO (template has no description field),n/a,
+markets,/market/offices-headquarters,Offices & Headquarters,archived,template,NO (template has no description field),n/a,
+markets,/market/hospitality-leisure,Hospitality & Leisure,archived,template,NO (template has no description field),n/a,
+markets,/market/arts-culture,Arts & Culture,archived,template,NO (template has no description field),n/a,
+markets,/market/residential,Residential,live,template,NO (template has no description field),yes,
