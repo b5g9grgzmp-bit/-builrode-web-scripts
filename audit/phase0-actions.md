@@ -42,9 +42,9 @@ The API cannot do these two; open the Contact page in the Designer:
 1. **Remove "Example Text".** Select each of the 4 fields (Full name, Mobile number, Society or sector, Message) → Element settings (gear icon) → clear the **Placeholder** box. Leave it empty, as on the homepage form.
 2. **Put Mobile and Society side by side.** Select the "Society or sector" block (class `form__item`) → Style panel → Grid child → set column span back to **1** (or Auto). It currently spans the full row.
 
-## Content decisions needed before publish (flagged, not changed)
-- **/projects is live with zero published projects.** The three real projects (Marigold House, Blue Tile House, Ella Vale House) are drafts; the 12 published items are archived Fusca template projects. Either publish the three projects or set the Projects page to draft until they are ready.
-- **Homepage links to a draft article.** `/article/compare-flat-renovation-quotes-noida` is staged as draft but still live from the 23 Nov publish. The next publish will 404 it. Set it back to published or remove the link.
+## Content decisions (resolved 25 Nov, staged by API)
+- **Projects:** Marigold House, Blue Tile House and Ella Vale House set to publish. Marigold's category switched from the draft "Kitchen design inspiration" to "Residential", like the other two. Note: Blue Tile House's location field says "Pune".
+- **Quotes article:** `compare-flat-renovation-quotes-noida` set to publish, so it stays live.
 - **Template leftovers still in the CMS**: 4 archived disciplines, 12 archived projects, 5 archived markets, 9 draft Fusca articles. Archived items are not published, but deleting them keeps the collections clean and avoids accidental republishing.
 
 ## Inventory summary (`audit/inventory.csv`)
